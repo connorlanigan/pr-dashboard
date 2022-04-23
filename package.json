@@ -1,0 +1,32 @@
+{
+  "name": "team-pull-requests",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "prebuild": "node prebuild.js",
+    "predev": "node prebuild.js",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@awsui/collection-hooks": "^1.0.25",
+    "@awsui/components-react": "^3.0.485",
+    "@awsui/design-tokens": "^3.0.21",
+    "@awsui/global-styles": "^1.0.14",
+    "javascript-time-ago": "^2.3.13",
+    "next": "12.1.5",
+    "next-transpile-modules": "^9.0.0",
+    "react": "18.0.0",
+    "react-dom": "18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "17.0.25",
+    "@types/react": "18.0.6",
+    "@types/react-dom": "18.0.2",
+    "eslint": "8.14.0",
+    "eslint-config-next": "12.1.5",
+    "typescript": "4.6.3"
+  }
+}

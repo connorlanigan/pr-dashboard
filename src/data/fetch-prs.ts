@@ -77,7 +77,9 @@ export async function fetchPRs(
         }
       }
 
-      const filteredReviewers = deduplicate(reviewers, 'login');
+      const filteredReviewers = deduplicate(reviewers, 'login').filter(
+        (reviewer) => reviewer.login !== author?.login
+      );
 
       const pr: PullRequest = {
         title: entry.title,

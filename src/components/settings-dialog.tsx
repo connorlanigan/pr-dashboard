@@ -10,6 +10,7 @@ import {
   SpaceBetween,
   Alert,
   TextContent,
+  Checkbox,
 } from '@awsui/components-react';
 import { ReactNode, useState } from 'react';
 import { useFlashbarContext } from '../contexts/flashbar-context';
@@ -21,13 +22,23 @@ interface SettingsDialogProps {
 }
 
 export function SettingsDialog({ onDismiss }: SettingsDialogProps) {
-  const { accessToken, setAccessToken } = useGlobalState();
+  const {
+    accessToken,
+    setAccessToken,
+    useShortNamesForTeamMembers,
+    setUseShortNamesForTeamMembers,
+  } = useGlobalState();
   const [localToken, setLocalToken] = useState(accessToken);
   const { addMessage } = useFlashbarContext();
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<
     string | undefined | ReactNode
   >(undefined);
+
+  const [
+    localUseShortNamesForTeamMembers,
+    setLocalUseShortNamesForTeamMembers,
+  ] = useState(useShortNamesForTeamMembers);
 
   const save = async () => {
     setLoading(true);
@@ -39,9 +50,10 @@ export function SettingsDialog({ onDismiss }: SettingsDialogProps) {
         scopes.includes('repo') &&
         (scopes.includes('read:org') || scopes.includes('admin:org'))
       ) {
-        addMessage('Personal access token saved.', { type: 'success' });
+        addMessage('Settings saved.', { type: 'success' });
 
         setAccessToken(localToken);
+        setUseShortNamesForTeamMembers(localUseShortNamesForTeamMembers);
         onDismiss();
       } else {
         setErrorMessage(
@@ -87,7 +99,10 @@ export function SettingsDialog({ onDismiss }: SettingsDialogProps) {
           <Button
             onClick={save}
             loading={loading}
-            disabled={localToken === accessToken}
+            disabled={
+              localToken === accessToken &&
+              localUseShortNamesForTeamMembers == useShortNamesForTeamMembers
+            }
             variant="primary"
           >
             Save
@@ -128,6 +143,14 @@ export function SettingsDialog({ onDismiss }: SettingsDialogProps) {
             />
           </FormField>
           {errorMessage && <Alert type="error">{errorMessage}</Alert>}
+          <Checkbox
+            checked={localUseShortNamesForTeamMembers}
+            onChange={(e) =>
+              setLocalUseShortNamesForTeamMembers(e.detail.checked)
+            }
+          >
+            Show only the first name of team members
+          </Checkbox>
         </SpaceBetween>
       </form>
     </Modal>

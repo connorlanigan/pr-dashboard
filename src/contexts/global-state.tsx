@@ -27,6 +27,8 @@ const context = createContext<GlobalStateContext>({
   selectTeam: () => {},
   selectedOrg: undefined,
   selectedTeam: undefined,
+  useShortNamesForTeamMembers: false,
+  setUseShortNamesForTeamMembers: () => {},
 });
 
 interface GlobalStateContext {
@@ -42,6 +44,8 @@ interface GlobalStateContext {
   selectOrg: (org: string | null) => void;
   selectedTeam: Team | undefined;
   selectTeam: (team: string | null) => void;
+  useShortNamesForTeamMembers: boolean;
+  setUseShortNamesForTeamMembers: (value: boolean) => void;
 }
 
 export function GlobalStateContext({ children }: PropsWithChildren<{}>) {
@@ -79,6 +83,9 @@ export function GlobalStateContext({ children }: PropsWithChildren<{}>) {
   const selectedTeam = selectedOrg?.teams.find(
     (team) => team.slug === selectedTeamId
   );
+
+  const [useShortNamesForTeamMembers, setUseShortNamesForTeamMembers] =
+    usePersistedState('use-short-names-for-team-members', true);
 
   /**
    * Load organisations and teams.
@@ -212,6 +219,8 @@ export function GlobalStateContext({ children }: PropsWithChildren<{}>) {
         pullRequestsError: error,
         pullRequestsLoading: loading,
         orgsLoading,
+        useShortNamesForTeamMembers,
+        setUseShortNamesForTeamMembers,
       } as GlobalStateContext),
     [
       availableOrgs,
@@ -225,6 +234,8 @@ export function GlobalStateContext({ children }: PropsWithChildren<{}>) {
       error,
       loading,
       orgsLoading,
+      useShortNamesForTeamMembers,
+      setUseShortNamesForTeamMembers,
       setSelectedOrgId,
     ]
   );

@@ -12,7 +12,7 @@ import {
   Toggle,
 } from '@awsui/components-react';
 import { useState } from 'react';
-import { PullRequest } from '../data/fetch-prs';
+import { PullRequest, User } from '../data/fetch-prs';
 import { ErrorBoundary } from './error-boundary';
 
 import TimeAgo from 'javascript-time-ago';
@@ -27,8 +27,13 @@ TimeAgo.setDefaultLocale(en.locale);
 const timeAgo = new TimeAgo('en-US');
 
 export function PullRequestsTable() {
-  const { pullRequestsLoading, pullRequests, pullRequestsError, selectedTeam } =
-    useGlobalState();
+  const {
+    pullRequestsLoading,
+    pullRequests,
+    pullRequestsError,
+    selectedTeam,
+    useShortNamesForTeamMembers,
+  } = useGlobalState();
 
   const [showOnlyUnassigned, setShowOnlyUnassigned] = useState(false);
   const [hideDependabot, setHideDependabot] = useState(false);
@@ -131,20 +136,28 @@ export function PullRequestsTable() {
             </SpaceBetween>
           )
         }
-        columnDefinitions={columnDefinitions(Boolean(selectedTeam))}
+        columnDefinitions={columnDefinitions(
+          Boolean(selectedTeam),
+          useShortNamesForTeamMembers
+        )}
       />
     </ErrorBoundary>
   );
 }
 
 const columnDefinitions: (
-  teamSelected: boolean
-) => TableProps<PullRequest>['columnDefinitions'] = (teamSelected: boolean) => [
+  teamSelected: boolean,
+  useShortNamesForTeamMembers: boolean
+) => TableProps<PullRequest>['columnDefinitions'] = (
+  teamSelected: boolean,
+  useShortNamesForTeamMembers: boolean
+) => [
   {
     id: 'repository',
     header: 'Repository',
     cell: (e) => e.repository,
-    width: 250,
+    minWidth: 80,
+    maxWidth: 300,
   },
   {
     id: 'author',
@@ -154,7 +167,7 @@ const columnDefinitions: (
         <Box color="text-status-inactive">unknown</Box>
       ) : (
         <SpaceBetween size="xxs" direction="horizontal">
-          {e.author.name ?? e.author.login}
+          {formatUser(e.author, useShortNamesForTeamMembers)}
           {e.author.__typename === 'Bot' ? (
             <Box color="text-status-info">(bot)</Box>
           ) : !e.author.isMember ? (
@@ -173,8 +186,8 @@ const columnDefinitions: (
           ) : undefined}
         </SpaceBetween>
       ),
-    minWidth: 250,
-    maxWidth: 350,
+    minWidth: 100,
+    maxWidth: 400,
   },
   {
     id: 'title',
@@ -191,13 +204,13 @@ const columnDefinitions: (
             <StatusIndicator type="pending">Draft</StatusIndicator> &mdash;{' '}
           </span>
         )}
-      <Link href={e.url} target="_blank">
-        {e.title}
-      </Link>
+        <Link href={e.url} target="_blank">
+          {e.title}
+        </Link>
       </>
     ),
     minWidth: 200,
-    maxWidth: 600,
+    maxWidth: 700,
   },
   {
     id: 'reviewer',
@@ -207,16 +220,29 @@ const columnDefinitions: (
         <StatusIndicator type="warning">Unassigned</StatusIndicator>
       ) : (
         e.reviewers
-          .map((reviewer) => reviewer.name ?? reviewer.login)
+          .map((reviewer) => formatUser(reviewer, useShortNamesForTeamMembers))
           .join(', ')
       ),
-    width: 300,
+    minWidth: 150,
     maxWidth: 300,
   },
   {
     id: 'last-update',
     header: 'Last update',
     cell: (e) => timeAgo.format(new Date(e.updatedAt), 'round-minute'),
-    width: 200,
+    width: 150,
   },
 ];
+
+function formatUser(user: User, useShortNamesForTeamMembers: boolean) {
+  if (user.name) {
+    if (useShortNamesForTeamMembers && user.isMember) {
+      const firstName = user.name.trim().split(' ')[0];
+      return firstName;
+    } else {
+      return user.name.trim();
+    }
+  } else {
+    return user.login;
+  }
+}

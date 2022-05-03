@@ -55,20 +55,29 @@ export async function fetchPRs(
           }
         : undefined;
 
-      const requestedReviewers = entry.reviewRequests.nodes
-        .map((node) => node.requestedReviewer)
-        .filter(
-          (reviewer) => reviewer && reviewer.login !== undefined
-        ) as Array<User>;
+      const reviewers: User[] = [];
 
-      const completedReviewers: Array<User> = entry.reviews.nodes.map(
-        (node: any) => node.author
-      );
+      for (const request of entry.reviewRequests.nodes) {
+        const reviewer = request.requestedReviewer;
+        if (reviewer && reviewer.login !== undefined) {
+          reviewers.push({
+            login: reviewer.login,
+            ...reviewer,
+            isMember: members.includes(reviewer.login),
+          });
+        }
+      }
 
-      const filteredReviewers = deduplicate(
-        [...requestedReviewers, ...completedReviewers],
-        'login'
-      );
+      for (const review of entry.reviews.nodes) {
+        if (review.author) {
+          reviewers.push({
+            ...review.author,
+            isMember: members.includes(review.author.login),
+          });
+        }
+      }
+
+      const filteredReviewers = deduplicate(reviewers, 'login');
 
       const pr: PullRequest = {
         title: entry.title,
@@ -96,9 +105,9 @@ export interface PullRequest {
   isDraft: boolean;
 }
 
-interface User {
+export interface User {
   login: string;
   name?: string;
   __typename?: string;
-  isMember?: boolean;
+  isMember: boolean;
 }

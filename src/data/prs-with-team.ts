@@ -15,6 +15,7 @@ query ($organisation: String!, $team: String!) {
               title
               url
               updatedAt
+              isDraft
               author {
                 __typename
                 ... on User {
@@ -67,6 +68,7 @@ export interface PrsWithTeamResponse {
               title: string;
               url: string;
               updatedAt: string;
+              isDraft: boolean;
               author?: {
                 __typename: string;
                 name?: string;

@@ -77,6 +77,7 @@ export async function fetchPRs(
         updatedAt: entry.updatedAt,
         url: entry.url,
         repository: repository.name,
+        isDraft: entry.isDraft,
       };
       collector.push(pr);
     }
@@ -92,6 +93,7 @@ export interface PullRequest {
   updatedAt: string;
   title: string;
   author?: User;
+  isDraft: boolean;
 }
 
 interface User {

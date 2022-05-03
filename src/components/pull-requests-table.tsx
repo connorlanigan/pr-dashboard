@@ -32,6 +32,8 @@ export function PullRequestsTable() {
 
   const [showOnlyUnassigned, setShowOnlyUnassigned] = useState(false);
   const [hideDependabot, setHideDependabot] = useState(false);
+  const [hideDraft, setHideDraft] = useState(true);
+
   const data = (() => {
     if (pullRequests === undefined) {
       return pullRequests;
@@ -49,9 +51,16 @@ export function PullRequestsTable() {
           entry.author?.login !== 'dependabot-preview'
       );
     }
+    if (hideDraft) {
+      data = data.filter((entry) => !entry.isDraft);
+    }
 
     return data;
   })();
+
+  const draftCount = (pullRequests ?? []).filter(
+    (entry) => entry.isDraft
+  ).length;
 
   return (
     <ErrorBoundary>
@@ -84,6 +93,12 @@ export function PullRequestsTable() {
               onChange={(e) => setHideDependabot(e.detail.checked)}
             >
               Hide Dependabot PRs
+            </Toggle>
+            <Toggle
+              checked={hideDraft}
+              onChange={(e) => setHideDraft(e.detail.checked)}
+            >
+              Hide drafts {draftCount ? `(${draftCount})` : ''}
             </Toggle>
           </SpaceBetween>
         }
@@ -170,9 +185,16 @@ const columnDefinitions: (
       </SpaceBetween>
     ),
     cell: (e) => (
+      <>
+        {e.isDraft && (
+          <span>
+            <StatusIndicator type="pending">Draft</StatusIndicator> &mdash;{' '}
+          </span>
+        )}
       <Link href={e.url} target="_blank">
         {e.title}
       </Link>
+      </>
     ),
     minWidth: 200,
     maxWidth: 600,
